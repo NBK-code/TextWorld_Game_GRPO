@@ -20,6 +20,17 @@ We treat **entire game episodes as rollouts** and optimize the model by comparin
 - **Notebook 1**: Run TextWorld episodes and generate GRPO training data
 - **Notebook 2**: Train the model using GRPO loss
 
-## What is GRPO?
+## Group Relative Policy Optimization (GRPO)
 
 ![GRPO Objective and Training Flow](grpo.png)
+
+GRPO trains a policy by **comparing multiple solutions to the same problem**, rather than scoring each solution in isolation.
+
+For a fixed input (in our case, a TextWorld game prompt), the model generates a **group of complete trajectories**. Each trajectory represents a full attempt at solving the task. After all attempts finish, a single reward is assigned to each trajectory based on how well it performed.
+
+Instead of learning an absolute notion of “good” or “bad,” GRPO asks a simpler question:
+**which trajectories in this group were better than the others?**
+
+The rewards are normalized within the group to produce relative advantages. These advantages are then applied to every token in the corresponding trajectory, encouraging the model to increase the probability of actions that appeared in better-than-average solutions and decrease it for worse ones.
+
+A reference policy is used to regularize training, preventing the model from drifting too far from its original behavior and keeping learning stable.
